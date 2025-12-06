@@ -6,6 +6,7 @@ const { resolvePlugin, resolveMod } = require('./resolvers');
 const app = express();
 const docker = new Docker();
 const port = 3000;
+const MAX_SERVERS = 5;
 
 app.use(bodyParser.json());
 
@@ -67,7 +68,6 @@ app.get('/servers/:id', async (req, res) => {
 });
 
 // CREATE SERVER
-// CREATE SERVER
 app.post('/servers', async (req, res) => {
     const { version, type, name, plugins, mods, ops } = req.body;
 
@@ -75,10 +75,20 @@ app.post('/servers', async (req, res) => {
         return res.status(400).json({ error: 'Missing required parameters: version, type' });
     }
 
-    const containerName = name || `mc-server-${Date.now()}`;
-    const image = 'itzg/minecraft-server';
-
     try {
+        // Check capacity
+        const containers = await docker.listContainers({
+            all: true,
+            filters: { ancestor: ['itzg/minecraft-server'] }
+        });
+
+        if (containers.length >= MAX_SERVERS) {
+            return res.status(503).json({ error: 'La capacidad del servidor esta llena lo siento' });
+        }
+
+        const containerName = name || `mc-server-${Date.now()}`;
+        const image = 'itzg/minecraft-server';
+
         // Resolve Plugins/Mods
         let envVars = [
             'EULA=TRUE',

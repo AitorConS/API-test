@@ -98,6 +98,7 @@ Crea e inicia un nuevo contenedor de servidor de Minecraft.
     }
   }
   ```
+- **Nota**: El servidor tiene una capacidad máxima de 5 contenedores. Si se alcanza este límite, se devolverá un error 503 con el mensaje "La capacidad del servidor esta llena lo siento".
 
 ### 4. Eliminar Servidor
 Detiene y elimina un servidor.
